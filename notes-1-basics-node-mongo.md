@@ -108,33 +108,9 @@ async function deleteDocument(db, filter) {
 
 **Why Keep This Template?**
 
-These are common database operations you'll frequently use. Rather than memorizing the exact syntax, save this as a reference and modify it based on the context of your project.
+These are common database operations you'll frequently use. Save this as a reference and modify it based on the context of your project.
 
-## 4. Common HTTP Status Codes Overview
-
-### 2xx Series (Successful Responses):
-
-- 200 OK: The request was successful, and the server returned the requested data.
-- 201 Created: The request was successful, and a new resource was created.
-- 204 No Content: The request was successful, but there is no content to return.
-
-### 4xx Series (Client Errors):
-
-- 400 Bad Request: The server could not understand the request due to invalid syntax.
-- 404 Not Found: The server could not find the requested resource.
-- 401 Unauthorized: Authentication is required and has failed or has not been provided.
-
-### 5xx Series (Server Errors):
-
-- 500 Internal Server Error: The server encountered an unexpected condition that prevented it from fulfilling the request.
-- 502 Bad Gateway: The server, while acting as a gateway or proxy, received an invalid response from the upstream server.
-- 503 Service Unavailable: The server is currently unable to handle the request due to temporary overload or maintenance.
-
-These status codes help clients understand the result of their requests and handle responses appropriately.
-
---
-
-## 5. Retrieving All Entities from the Database
+## 4. Retrieving Entities from the Database
 
 ### In a typical scenario, you would:
 

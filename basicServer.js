@@ -16,32 +16,58 @@ const client = new MongoClient(uri,  {
         strict: true,
         deprecationErrors: true,
     }
-}
-);
+});
 
 // 5. Create HTTP Server
-const server = createServer((req, res) => { //create a server that listens for incoming requests
-    if (req.method === 'POST') { // POST - sending data to the server
-        let body = '';
+const server = createServer(async (req, res) => { // Make the request handler async
+    console.log(`Received ${req.method} request`)
+    try {
+        if (req.method === 'POST') { // POST - sending data to the server
+            console.log('Handling POST request');
+            let body = '';
 
-        req.on('data', chunk => { //collect data and append it to the body variable
-            body += chunk.toString();
-        });
-
-        req.on('end', () => { // end of data. then all data is received, the server parses the data and then passes it the run() function
-            const parsedBody = JSON.parse(body);
-            run(parsedBody).then(function (id) { //run() asynchronous function that inserts the data into MongoDB.
-                res.writeHead(201, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ destination: id })); //the server responds with the document's ID
-            }).catch(error => { //error handling
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Database operation failed', details: error }));
+            req.on('data', chunk => { // Collect data and append it to the body variable
+                body += chunk.toString();
             });
-        });
-    } else {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'text/plain');
-        res.end('Hello World');
+
+            req.on('end', async () => { // End of data. Parse and handle it
+                console.log('Data received:', body);
+                const parsedBody = JSON.parse(body);
+                try {
+                    const id = await run(parsedBody); // Use await for the async run function
+                    res.writeHead(201, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ destination: id }));
+                } catch (error) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Database operation failed', details: error.message }));
+                }
+            });
+        } else if (req.method === 'GET') { // GET - retrieving data from the server
+            console.log('Handling GET request');
+            await client.connect();
+            const myDB = client.db("myDB");
+            const myColl = myDB.collection("pizzaMenu");
+
+            // Fetch all documents from the collection
+            const cursor = myColl.find({});
+            const data = await cursor.toArray();
+
+            // Set response headers and send data as JSON
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(data));
+        } else {
+            console.log('Default response for other methods');
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/plain');
+            res.end('Hello World');
+        }
+    } catch (error) {
+        console.error('Server error:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Server error', details: error.message }));
+    } finally {
+        // Ensure that the client will close when finished
+        await client.close();
     }
 });
 
@@ -70,4 +96,3 @@ async function run(data) {
 server.listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}/`);
 });
-  
